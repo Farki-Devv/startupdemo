@@ -25,7 +25,6 @@ async function Page({ params }: { params: { slug: string } }) {
 						height={30}
 						className='rounded-sm object-cover'
 					/>
-					<p>by {blog.author.name}</p>
 				</div>
 				<Minus />
 				<div className='flex items-center gap-2'>
@@ -71,7 +70,7 @@ async function Page({ params }: { params: { slug: string } }) {
 				/>
 				<div className='flex flex-1 flex-col space-y-4'>
 					<h2 className='font-space-grotesk text-3xl font-bold'>
-						{blog.author.name}
+Farrux
 					</h2>
 					<p className='line-clamp-2 text-muted-foreground'>
 						{blog.author.bio}
