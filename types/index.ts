@@ -32,7 +32,7 @@ export interface IInstructor {
 }
 
 export interface IAuthor {
-	name: string
+	title: string
 	image: { url: string }
 	bio: string
 	blogs: IBlog[]
