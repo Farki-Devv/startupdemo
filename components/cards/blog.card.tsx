@@ -51,7 +51,6 @@ function BlogCard(blog: IBlog) {
 								height={30}
 								className='rounded-sm object-cover'
 							/>
-							<p>by {blog.author.title}</p>
 						</div>
 						<Dot />
 					</div>
