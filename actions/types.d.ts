@@ -52,7 +52,7 @@ export interface IUpdatePosition {
 }
 
 export interface GetCoursesParams {
-	clerkId: string
+	clerkId?: string
 	page?: number
 	pageSize?: number
 }

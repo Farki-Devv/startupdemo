@@ -19,7 +19,7 @@ export const createCourse = async (data: ICreateCourse, clerkId: string) => {
 		await Course.create({ ...data, instructor: user._id })
 		revalidatePath('/en/instructor/my-courses')
 	} catch (error) {
-		throw new Error('Soething went wrong while creating course!')
+		throw new Error('Soething went wrong while creating course!' )
 	}
 }
 
@@ -27,6 +27,7 @@ export const getCourses = async (params: GetCoursesParams) => {
 	try {
 		await connectToDatabase()
 		const { clerkId, page = 1, pageSize = 3 } = params
+		console.log(params)
 
 		const skipAmount = (page - 1) * pageSize
 
@@ -38,10 +39,10 @@ export const getCourses = async (params: GetCoursesParams) => {
 
 		const totalCourses = await Course.find({ instructor: _id }).countDocuments()
 		const isNext = totalCourses > skipAmount + courses.length
-
 		return { courses, isNext, totalCourses }
-	} catch (error) {
-		throw new Error('Soething went wrong while getting course!')
+		
+	} catch (err) {
+		throw new Error('Soething went wrong while getting course! getCoure' )
 	}
 }
 

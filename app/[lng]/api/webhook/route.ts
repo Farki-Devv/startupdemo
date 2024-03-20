@@ -70,7 +70,6 @@ export async function POST(req: Request) {
 				fullName: `${first_name} ${last_name}`,
 				picture: image_url,
 			},
-			path: ''
 		})
 
 		return NextResponse.json({ message: 'OK', user })
