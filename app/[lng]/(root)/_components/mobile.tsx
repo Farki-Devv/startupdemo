@@ -48,7 +48,7 @@ function Mobile() {
 						<Button size={'icon'} variant={'ghost'}>
 							<ShoppingCart />
 						</Button>
-						<GlobalSearch />
+						<GlobalSearch/>
 						<ModeToggle />
 					</div>
 				</div>

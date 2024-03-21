@@ -12,7 +12,7 @@ function Instructor() {
 
 	return (
 		<div className='container mx-auto max-w-6xl py-12'>
-			<div className='flex items-center justify-between'>
+			<div className='flex grid-cols-1 items-center justify-between max-md:grid'>
 				<div className='flex flex-col space-y-1'>
 					<h1 className='font-space-grotesk text-3xl font-bold'>
 						{t('learnInstructors')}

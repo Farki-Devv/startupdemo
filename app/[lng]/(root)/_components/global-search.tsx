@@ -37,7 +37,7 @@ function GlobalSearch() {
 	return (
 		<div className='search-box'>
 			<Button size={'icon'} variant={'ghost'} className='btn-search'>
-				<Search />
+				<Search className='text-black dark:text-white' />
 			</Button>
 			<input
 				type='text'
