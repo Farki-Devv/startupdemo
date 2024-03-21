@@ -7,8 +7,7 @@ import {
 	Carousel,
 	CarouselContent,
 	CarouselItem,
-	CarouselNext,
-	CarouselPrevious,
+
 } from '@/components/ui/carousel'
 import CourseCard from '@/components/cards/course.card'
 import { translation } from '@/i18n/server'
@@ -52,7 +51,7 @@ async function Page({ params: { lng, slug } }: Props) {
 					{t('youMayLike')}
 				</h1>
 
-				<Carousel opts={{ align: 'start' }} className='mt-6 w-full'>
+				<Carousel opts={{ align: 'start', loop: true }} className='mt-6 w-full'>
 					<CarouselContent className='w-full'>
 						{courses.map((course: ICourse) => (
 							<CarouselItem
@@ -63,8 +62,6 @@ async function Page({ params: { lng, slug } }: Props) {
 							</CarouselItem>
 						))}
 					</CarouselContent>
-					<CarouselPrevious />
-					<CarouselNext />
 				</Carousel>
 			</div>
 		</>

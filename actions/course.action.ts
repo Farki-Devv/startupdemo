@@ -27,7 +27,6 @@ export const getCourses = async (params: GetCoursesParams) => {
 	try {
 		await connectToDatabase()
 		const { clerkId, page = 1, pageSize = 3 } = params
-		console.log(params)
 
 		const skipAmount = (page - 1) * pageSize
 

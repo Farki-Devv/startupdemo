@@ -11,7 +11,6 @@ export default authMiddleware({
 	publicRoutes: [
 		'/:lng',
 		'/:lng/courses',
-		'/:lng/courses/:slug',
 		'/:lng/blogs',
 		'/:lng/blogs/:slug',
 		'/:lng/contacts',

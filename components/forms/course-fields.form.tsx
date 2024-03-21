@@ -86,7 +86,7 @@ function CourseFieldsForm() {
 			},
 			user?.id as string
 		)
-			.then(() => {
+			.then(() => { 
 				form.reset()
 				router.push('/en/instructor/my-courses')
 			})

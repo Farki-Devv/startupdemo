@@ -120,12 +120,12 @@ function Overview(course: ICourse) {
 			</div>
 
 			<div className='mt-8 flex flex-col pb-20'>
-				<div className='mt-6 flex items-center gap-1 font-space-grotesk text-xl'>
+				<div className='mt-6 grid grid-cols-1 items-center gap-1 font-space-grotesk text-xl md:flex'>
 					<Star className='fill-[#DD6B20] text-[#DD6B20]' />
 					<div className='font-medium'>
 						{t('reviewCourse')}: <span className='font-bold'>4.5</span>
 					</div>
-					<Dot />
+					<Dot className='hidden md:flex' />
 					<div className='font-medium'>
 						<span className='font-bold'>20</span>
 						{t('review')}
