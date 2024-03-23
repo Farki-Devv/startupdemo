@@ -11,6 +11,8 @@ import Section from '@/database/section.model'
 import Lesson from '@/database/lesson.model'
 import { calculateTotalDuration } from '@/lib/utils'
 import { FilterQuery } from 'mongoose'
+import Purchase from '@/database/purchase.model'
+import UserProgress from '@/database/user-progress.model'
 
 export const createCourse = async (data: ICreateCourse, clerkId: string) => {
 	try {
@@ -19,7 +21,7 @@ export const createCourse = async (data: ICreateCourse, clerkId: string) => {
 		await Course.create({ ...data, instructor: user._id })
 		revalidatePath('/en/instructor/my-courses')
 	} catch (error) {
-		throw new Error('Soething went wrong while creating course!' )
+		throw new Error('Soething went wrong while creating course!')
 	}
 }
 
@@ -39,9 +41,8 @@ export const getCourses = async (params: GetCoursesParams) => {
 		const totalCourses = await Course.find({ instructor: _id }).countDocuments()
 		const isNext = totalCourses > skipAmount + courses.length
 		return { courses, isNext, totalCourses }
-		
 	} catch (err) {
-		throw new Error('Soething went wrong while getting course! getCoure' )
+		throw new Error('Soething went wrong while getting course! getCoure')
 	}
 }
 
@@ -197,5 +198,62 @@ export const getAllcourses = async (params: GettAllCoursesParams) => {
 		return { courses, isNext, totalCourses }
 	} catch (error) {
 		throw new Error('Something went wrong!')
+	}
+}
+export const purchaseCourse = async (course: string, clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId })
+		const checkCourse = await Course.findById(course)
+			.select('purchases')
+			.populate({
+				path: 'purchases',
+				model: Purchase,
+				match: { user: user._id },
+			})
+		if (checkCourse.purchases.length > 0) {
+			return JSON.parse(JSON.stringify({ status: 200 }))
+		}
+		const purchase = await Purchase.create({ user: user._id, course })
+
+		await Course.findByIdAndUpdate(course, {
+			$push: { purchases: purchase._id },
+		})
+		return JSON.parse(JSON.stringify({ status: 200 }))
+	} catch (error) {
+		throw new Error('Something went wrong while purchasing course!')
+	}
+}
+export const getDashboardCourse = async (clerkId: string, courseId: string) => {
+	try {
+		await connectToDatabase()
+		const course = await Course.findById(courseId).select('title')
+		const sections = await Section.find({ course: courseId })
+			.select('title')
+			.sort({ position: 1 })
+			.populate({
+				path: 'lessons',
+				model: Lesson,
+				select: 'title userProgress',
+				options: { sort: { position: 1 } },
+				populate: {
+					path: 'userProgress',
+					match: { userId: clerkId },
+					model: UserProgress,
+					select: 'lessonId',
+				},
+			})
+		const lessons = sections.map(section => section.lessons).flat()
+		const lessonIds = lessons.map(lesson => lesson._id)
+		const validCompletedLessons = await UserProgress.find({
+			userId: clerkId,
+			lessonId: { $in: lessonIds },
+			isCompleted: true,
+		})
+		const progressPercentage =
+			(validCompletedLessons.length / lessons.length) * 100
+		return { course, sections, progressPercentage }
+	} catch (error) {
+		throw new Error('Something went wrong  while dashboard course!')
 	}
 }

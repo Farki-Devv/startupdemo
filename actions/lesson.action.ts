@@ -6,6 +6,9 @@ import Section from '@/database/section.model'
 import Lesson from '@/database/lesson.model'
 import { revalidatePath } from 'next/cache'
 
+import UserProgress from '@/database/user-progress.model'
+import { ILesson } from '@/app.types'
+
 export const getLessons = async (section: string) => {
 	try {
 		await connectToDatabase()
@@ -85,6 +88,129 @@ export const editLessonPosition = async (params: IUpdatePosition) => {
 		}
 
 		revalidatePath(path)
+	} catch (error) {
+		throw new Error('Something went wrong!')
+	}
+}
+
+export const completeLesson = async (
+	lessonId: string,
+	userId: string,
+	path: string
+) => {
+	try {
+		await connectToDatabase()
+		const userProgress = await UserProgress.findOne({ userId, lessonId })
+		if (userProgress) {
+			userProgress.isCompleted = true
+			await userProgress.save()
+		} else {
+			const newUserProgress = new UserProgress({
+				userId,
+				lessonId,
+				isCompleted: true,
+			})
+			const lesson = await Lesson.findById(lessonId)
+			lesson.userProgress.push(newUserProgress._id)
+			await lesson.save()
+			await newUserProgress.save()
+		}
+
+		revalidatePath(path)
+	} catch (error) {
+		throw new Error('Something went wrong!')
+	}
+}
+
+export const uncompleteLesson = async (lessonId: string, path: string) => {
+	try {
+		await connectToDatabase()
+		await UserProgress.findOneAndDelete({ lessonId })
+
+		revalidatePath(path)
+	} catch (error) {
+		throw new Error('Something went wrong!')
+	}
+}
+
+export const getLesson = async (id: string) => {
+	try {
+		await connectToDatabase()
+		return await Lesson.findById(id).select('title content videoUrl')
+	} catch (error) {
+		throw new Error('Something went wrong!')
+	}
+}
+
+export const getNextLesson = async (lessonId: string, courseId: string) => {
+	try {
+		await connectToDatabase()
+		const sections = await Section.find({ course: courseId }).populate({
+			path: 'lessons',
+			options: { sort: { position: 1 } },
+			model: Lesson,
+		})
+
+		const lessons: ILesson[] = sections.map(section => section.lessons).flat()
+
+		let lessonIndex = lessons.findIndex(
+			item => item._id.toString() === lessonId
+		)
+
+		// Agar darslar ro'yxatining oxiriga yetgan bo'lsak, ro'yxatning boshiga qaytish
+		if (lessonIndex === lessons.length - 1) {
+			lessonIndex = 0
+		} else {
+			lessonIndex++
+		}
+
+		const nextLesson = lessons[lessonIndex]
+
+		const section = await Section.findOne({ lessons: nextLesson._id })
+
+		return { lessonId: nextLesson._id, sectionId: section._id }
+	} catch (error) {
+		throw new Error('Something went wrong!')
+	}
+}
+
+export const getLastLesson = async (clerkId: string, courseId: string) => {
+	try {
+		await connectToDatabase()
+
+		const sections = await Section.find({ course: courseId })
+			.select('lessons')
+			.sort({ position: 1 })
+			.populate({
+				path: 'lessons',
+				model: Lesson,
+				select: 'userProgress',
+				options: { sort: { position: 1 } },
+			})
+
+		const lessons: ILesson[] = sections.map(section => section.lessons).flat()
+
+		const userProgress = await UserProgress.find({
+			userId: clerkId,
+			lessonId: { $in: lessons.map(lesson => lesson._id) },
+			isCompleted: true,
+		}).sort({ createdAt: -1 })
+
+		const lastLesson = userProgress[userProgress.length - 1]
+
+		if (!lastLesson) {
+			return {
+				sectionId: sections[0]._id.toString(),
+				lessonId: sections[0].lessons[0]._id.toString(),
+			}
+		}
+
+		const section = await Section.findOne({ lessons: lastLesson.lessonId })
+
+		return {
+			lessonId: lastLesson.lessonId.toString(),
+			sectionId: section._id.toString(),
+		}
 	} catch (error) {
 		throw new Error('Something went wrong!')
 	}
