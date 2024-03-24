@@ -168,7 +168,10 @@ export const getNextLesson = async (lessonId: string, courseId: string) => {
 
 		const section = await Section.findOne({ lessons: nextLesson._id })
 
-		return { lessonId: nextLesson._id, sectionId: section._id }
+		return {
+			lessonId: nextLesson._id.toString(),
+			sectionId: section._id.toString(),
+		}
 	} catch (error) {
 		throw new Error('Something went wrong!')
 	}

@@ -13,6 +13,7 @@ import { calculateTotalDuration } from '@/lib/utils'
 import { FilterQuery } from 'mongoose'
 import Purchase from '@/database/purchase.model'
 import UserProgress from '@/database/user-progress.model'
+import Review from '@/database/review.model'
 
 export const createCourse = async (data: ICreateCourse, clerkId: string) => {
 	try {
@@ -40,7 +41,29 @@ export const getCourses = async (params: GetCoursesParams) => {
 
 		const totalCourses = await Course.find({ instructor: _id }).countDocuments()
 		const isNext = totalCourses > skipAmount + courses.length
-		return { courses, isNext, totalCourses }
+		const allCourses = await Course.find({ instructor: _id })
+			.select('purchases currentPrice')
+			.populate({
+				path: 'purchases',
+				model: Purchase,
+				select: 'course',
+				populate: {
+					path: 'course',
+					model: Course,
+					select: 'currentPrice',
+				},
+			})
+		const totalStudents = allCourses
+			.map(c => c.purchases.length)
+			.reduce((a, b) => a + b, 0)
+
+		const totalEarnings = allCourses
+			.map(c => c.purchases)
+			.flat()
+			.map(p => p.course.currentPrice)
+			.reduce((a, b) => a + b, 0)
+
+		return { courses, isNext, totalCourses, totalEarnings, totalStudents }
 	} catch (err) {
 		throw new Error('Soething went wrong while getting course! getCoure')
 	}
@@ -120,12 +143,22 @@ export const getDetailedCourse = cache(async (id: string) => {
 		const totalLessons: ILesson[] = sections
 			.map(section => section.lessons)
 			.flat()
-
+		const reviews = await Review.find({ course: id, isFlag: false }).select(
+			'rating'
+		)
+		const rating = reviews.reduce((total, review) => total + review.rating, 0)
+		const purchasedStudents = await Purchase.find({
+			course: id,
+		}).countDocuments()
+		const calcRating = (rating / reviews.length).toFixed(1)
 		const data = {
 			...course._doc,
 			totalLessons: totalLessons.length,
 			totalSections: sections.length,
 			totalDuration: calculateTotalDuration(totalLessons),
+			rating: calcRating === 'NaN' ? 0 : calcRating,
+			reviewCount: reviews.length,
+			purchasedStudents,
 		}
 
 		return data
@@ -255,5 +288,48 @@ export const getDashboardCourse = async (clerkId: string, courseId: string) => {
 		return { course, sections, progressPercentage }
 	} catch (error) {
 		throw new Error('Something went wrong  while dashboard course!')
+	}
+}
+export const addFavouriteCourse = async (courseId: string, clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId })
+		const isFavourite = await User.findOne({
+			clerkId,
+			favouriteCourses: courseId,
+		})
+		if (isFavourite) {
+			await User.findByIdAndUpdate(user._id, {
+				$pull: { favouriteCourses: courseId },
+			})
+		} else {
+			await User.findByIdAndUpdate(user._id, {
+				$push: { favouriteCourses: courseId },
+			})
+		}
+	} catch (error) {
+		throw new Error('Something went wrong favouriteCourse')
+	}
+}
+
+export const addArchiveCourse = async (courseId: string, clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId })
+		const isArchive = await User.findOne({
+			clerkId,
+			archiveCourses: courseId,
+		})
+		if (isArchive) {
+			await User.findByIdAndUpdate(user._id, {
+				$pull: { archiveCourses: courseId },
+			})
+		} else {
+			await User.findByIdAndUpdate(user._id, {
+				$push: { archiveCourses: courseId },
+			})
+		}
+	} catch (error) {
+		throw new Error('Something went wrong favouriteCourse')
 	}
 }

@@ -1,10 +1,9 @@
 'use client'
 
 import { getCourseSections } from '@/actions/section.action'
-import { ICourse, ISection } from '@/app.types'
+import { ICourse, IReview, ISection } from '@/app.types'
 import ReviewCard from '@/components/cards/review.card'
 import { Accordion } from '@/components/ui/accordion'
-import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import useTranslate from '@/hooks/use-translate'
 import {
@@ -18,16 +17,25 @@ import {
 import { useEffect, useState } from 'react'
 import SectionList from './section-list'
 import SectionLoading from '@/components/shared/section-loading'
+import { getCourseReviws } from '@/actions/review.action'
+import AllReviews from './all-reviews'
+import NoResult from '@/components/shared/no-result'
+import ReviewLoading from '@/components/shared/review-loading'
 
 function Overview(course: ICourse) {
 	const [isLoading, setIsLoading] = useState(true)
 	const [sections, setSections] = useState<ISection[]>([])
+	const [reviews, setReviews] = useState<IReview[]>([])
 	const t = useTranslate()
 	useEffect(() => {
 		const getData = async () => {
 			try {
-				const res = await getCourseSections(course._id)
-				setSections(res)
+				const [sections, reviews] = await Promise.all([
+					getCourseSections(course._id),
+					getCourseReviws(course._id, 6),
+				])
+				setSections(sections)
+				setReviews(reviews)
 				setIsLoading(false)
 			} catch (error) {
 				setIsLoading(false)
@@ -118,35 +126,38 @@ function Overview(course: ICourse) {
 					))}
 				</div>
 			</div>
-
-			<div className='mt-8 flex flex-col pb-20'>
-				<div className='mt-6 grid grid-cols-1 items-center gap-1 font-space-grotesk text-xl md:flex'>
-					<Star className='fill-[#DD6B20] text-[#DD6B20]' />
-					<div className='font-medium'>
-						{t('reviewCourse')}: <span className='font-bold'>4.5</span>
+			{isLoading ? (
+				<ReviewLoading />
+			) : reviews.length ? (
+				<div className='mt-8 flex flex-col pb-20'>
+					<div className='mt-6 grid grid-cols-1 items-center gap-1 font-space-grotesk text-xl md:flex'>
+						<Star className='fill-[#DD6B20] text-[#DD6B20]' />
+						<div className='font-medium'>
+							{t('reviewCourse')}:
+							<span className='font-bold'> {course.rating}</span>
+						</div>
+						<Dot className='hidden md:flex' />
+						<div className='font-medium'>
+							<span className='font-bold'>{course.reviewCount}</span>
+							{t('review')}
+						</div>
 					</div>
-					<Dot className='hidden md:flex' />
-					<div className='font-medium'>
-						<span className='font-bold'>20</span>
-						{t('review')}
+
+					<div className='mt-5 grid grid-cols-1 gap-2 lg:grid-cols-2'>
+						{reviews.map(review => (
+							<ReviewCard key={review._id} review={review} />
+						))}
 					</div>
-				</div>
 
-				<div className='mt-5 grid grid-cols-1 gap-2 lg:grid-cols-2'>
-					<ReviewCard />
-					<ReviewCard />
-					<ReviewCard />
-					<ReviewCard />
+					{course.reviewCount > 6 && <AllReviews {...course} />}
 				</div>
-
-				<Button
-					size={'lg'}
-					rounded={'full'}
-					className='mx-auto mt-6 flex justify-center'
-				>
-					{t('viewAll')}
-				</Button>
-			</div>
+			) : (
+				<NoResult
+					title={t('noReviews')}
+					description={t('noReviewsDescription')}
+				/>
+			)}
+			{}
 		</>
 	)
 }

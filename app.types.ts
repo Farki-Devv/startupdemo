@@ -18,6 +18,9 @@ export interface ICourse {
 	totalLessons: number
 	totalSections: number
 	totalDuration: string
+	rating: number
+	reviewCount: number
+	purchasedStudents:number
 }
 
 export interface ISection {
@@ -66,4 +69,17 @@ export interface IUser {
 
 export interface SearchParamsProps {
 	searchParams: { [key: string]: string | undefined }
+}
+
+export interface IReview {
+	data: string
+	rating: number
+	user: IUser
+	createdAt: string
+	isTransfer: boolean
+	_id: string
+	student: string
+	studentImage: string
+	course: ICourse
+	isFlag: boolean
 }

@@ -14,10 +14,11 @@ const UserSchema = new Schema(
 		linkedin: String,
 		github: String,
 		youtube: String,
+		favouriteCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
+		archiveCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
 	},
 	{ timestamps: true }
 )
 
 const User = models.User || model('User', UserSchema)
 export default User
-
