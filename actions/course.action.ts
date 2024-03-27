@@ -333,3 +333,62 @@ export const addArchiveCourse = async (courseId: string, clerkId: string) => {
 		throw new Error('Something went wrong favouriteCourse')
 	}
 }
+export const getIsPurchase = async (clerkId: string, courseId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId })
+		const isPruchased = await Purchase.findOne({
+			user: user._id,
+			course: courseId,
+		})
+		return !!isPruchased
+	} catch (error) {
+		throw new Error('Something went wrong while getting purchased courses!')
+	}
+}
+export const getProgressCourse = async (clerkId: string, courseId: string) => {
+	try {
+		await connectToDatabase()
+		const sections = await Section.find({ course: courseId }).populate({
+			path: 'lessons',
+			model: Lesson,
+			options: { sort: { order: 1 } },
+		})
+		const lessons = sections.map(section => section.lessons).flat()
+		const lessonIds = lessons.map(lesson => lesson._id)
+		const validCompletedLessons = await UserProgress.find({
+			userId: clerkId,
+			lessonId: { $in: lessonIds },
+			isCompleted: true,
+		})
+		const progressPercentage =
+			(validCompletedLessons.length / lessons.length) * 100
+
+		return progressPercentage
+	} catch (error) {
+		return 0
+	}
+}
+export const getStudentCourse = async (clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId }).select('_id')
+		const purchasedCourse = await Purchase.find({ user: user._id }).populate({
+			path: 'course',
+			model: Course,
+			select: 'title price_id previewImage slug category currentPrice	',
+		})
+		const courses = purchasedCourse.filter(el => el.course !== null)
+		const allCourses = []
+		for (const item of courses) {
+			const progress = await getProgressCourse(clerkId, item.course._id)
+			allCourses.push({ ...item._doc, progress })
+		}
+		const expenses = allCourses
+			.map(c => c.course.currentPrice)
+			.reduce((a, b) => a + b, 0)
+		return { allCourses, expenses }
+	} catch (error) {
+		throw new Error('Something went wrong while getting student courses!')
+	}
+}

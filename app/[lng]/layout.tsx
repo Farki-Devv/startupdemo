@@ -47,7 +47,7 @@ function RootLayout({ children, params: { lng } }: Props) {
 				>
 					<ThemeProvider
 						attribute='class'
-						defaultTheme='system'
+						defaultTheme='dark'
 						enableSystem
 						disableTransitionOnChange
 					>

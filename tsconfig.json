@@ -20,6 +20,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/[lng]/dashboard/[courseId]/[lessonId]/_components/mobile-curriculm.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "app/[lng]/dashboard/[courseId]/[lessonId]/_components/mobile-curriculm.tsx", "app/[lng]/profile/wishlist/page.tsx"],
   "exclude": ["node_modules"]
 }

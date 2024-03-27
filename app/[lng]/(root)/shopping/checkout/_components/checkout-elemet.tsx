@@ -5,8 +5,17 @@ import { useCart } from '@/hooks/use-cart'
 import useTranslate from '@/hooks/use-translate'
 import Image from 'next/image'
 import React from 'react'
-
-function CheckoutElemet() {
+import { loadStripe } from '@stripe/stripe-js'
+import { Elements } from '@stripe/react-stripe-js'
+import Checkout from './checkout'
+import { ICard } from '@/app.types'
+const stripePromise = loadStripe(
+	process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+)
+interface Props {
+	cards: ICard[]
+}
+function CheckoutElemet({ cards }: Props) {
 	const t = useTranslate()
 	const { totalPrice, taxes, carts } = useCart()
 	return (
@@ -21,6 +30,9 @@ function CheckoutElemet() {
 							<p className='text-sm text-muted-foreground'>
 								{t('fillDetails')}
 							</p>
+							<Elements stripe={stripePromise}>
+								<Checkout cards={cards} />
+							</Elements>
 						</CardContent>
 					</Card>
 					<div className='flex flex-col space-y-3'>
