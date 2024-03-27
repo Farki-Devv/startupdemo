@@ -9,7 +9,6 @@ async function Page({ params }: LngParams) {
 	const { t } = await translation(params.lng)
 	const { userId } = auth()
 	const cards = await getCustomerCards(userId!)
-	console.log(<cards></cards>)
 	return (
 		<>
 			<TopBar label={'shoppingCart'} extra={t('checkout')} />
