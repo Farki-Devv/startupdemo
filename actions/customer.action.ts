@@ -3,6 +3,7 @@
 import User from '@/database/user.model'
 import { connectToDatabase } from '@/lib/mongoose'
 import stripe from '@/lib/stripe'
+import { revalidatePath } from 'next/cache'
 
 export const createCustomer = async (userId: string) => {
 	try {
@@ -17,7 +18,8 @@ export const createCustomer = async (userId: string) => {
 		await User.findByIdAndUpdate(userId, { customerId: customer.id })
 		return customer
 	} catch (error) {
-		throw new Error('Couldn`t create customer')
+		const result = error as Error
+		throw new Error(result.message)
 	}
 }
 export const getCustomer = async (clerkId: string) => {
@@ -28,14 +30,33 @@ export const getCustomer = async (clerkId: string) => {
 		if (!customerId) return await createCustomer(_id)
 		return await stripe.customers.retrieve(customerId)
 	} catch (error) {
-		throw new Error('Couldnt get customer detail')
+		const result = error as Error
+		throw new Error(result.message)
 	}
 }
-export const atachPayment = async (paymentMethod: string, customer: string) => {
+export const atachPayment = async (
+	paymentMethod: string,
+	customer: string,
+	path?: string
+) => {
 	try {
+		path && revalidatePath(path)
 		return await stripe.paymentMethods.attach(paymentMethod, { customer })
 	} catch (error) {
-		throw new Error('Something went wrong atachPayment')
+		const result = error as Error
+		throw new Error(result.message)
+	}
+}
+export const detachPaymentMethod = async (
+	paymentMethod: string,
+	path: string
+) => {
+	try {
+		await stripe.paymentMethods.detach(paymentMethod)
+		revalidatePath(path)
+	} catch (error) {
+		const result = error as Error
+		throw new Error(result.message)
 	}
 }
 export const getCustomerCards = async (clerkId: string) => {
@@ -49,6 +70,21 @@ export const getCustomerCards = async (clerkId: string) => {
 		})
 		return paymentMethods.data
 	} catch (error) {
-		throw new Error('Something went wrong retrieve card')
+		const result = error as Error
+		throw new Error(result.message)
+	}
+}
+export const getPaymentIntent = async (clerkId: string) => {
+	try {
+		const customer = await getCustomer(clerkId)
+		const payments = await stripe.paymentIntents.list({
+			customer: customer.id,
+			limit: 100,
+			expand: ['data.payment_method'],
+		})
+		return payments.data
+	} catch (error) {
+		const result = error as Error
+		throw new Error(result.message)
 	}
 }

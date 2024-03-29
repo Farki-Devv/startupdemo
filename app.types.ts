@@ -103,3 +103,16 @@ export interface ICard {
 		last4: string
 	}
 }
+export interface IPayment {
+	id:string
+	metadata: { orderId: string }
+	created: number
+	amount: number
+	status: string
+	payment_method: {
+		card: {
+			brand: string
+			last4: string
+		}
+	}
+}

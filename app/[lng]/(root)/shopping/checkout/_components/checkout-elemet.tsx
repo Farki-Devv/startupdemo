@@ -9,6 +9,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements } from '@stripe/react-stripe-js'
 import Checkout from './checkout'
 import { ICard } from '@/app.types'
+
 const stripePromise = loadStripe(
 	process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 )
@@ -18,6 +19,7 @@ interface Props {
 function CheckoutElemet({ cards }: Props) {
 	const t = useTranslate()
 	const { totalPrice, taxes, carts } = useCart()
+
 	return (
 		<>
 			<div className='container mx-auto mt-12 max-w-6xl'>
@@ -59,6 +61,7 @@ function CheckoutElemet({ cards }: Props) {
 														className='object-cover'
 													/>
 												</div>
+												
 												<h1>{item.title}</h1>
 											</div>
 											<div className='flex items-center gap-2'>
