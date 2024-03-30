@@ -65,5 +65,9 @@ export interface GettAllCoursesParams {
 export interface GetReviewParams {
 	clerkId: string
 	page?: number
-	pageSize?:number
+	pageSize?: number
+}
+export interface GetPaginationParams {
+	page?: number
+	pageSize?: number
 }

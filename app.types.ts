@@ -1,3 +1,5 @@
+import { LucideIcon } from 'lucide-react'
+
 export interface ICourse {
 	_id: string
 	title: string
@@ -65,6 +67,8 @@ export interface IUser {
 	linkedin: string
 	github: string
 	youtube: string
+	approvedInstructor:boolean
+	isAdmin: boolean
 }
 
 export interface SearchParamsProps {
@@ -104,7 +108,7 @@ export interface ICard {
 	}
 }
 export interface IPayment {
-	id:string
+	id: string
 	metadata: { orderId: string }
 	created: number
 	amount: number
@@ -115,4 +119,10 @@ export interface IPayment {
 			last4: string
 		}
 	}
+}
+
+export interface INavlinks {
+	label: string
+	route: string
+	icon: LucideIcon
 }

@@ -1,13 +1,16 @@
 'use client'
 
+import { IUser } from '@/app.types'
 import InstructorCard from '@/components/cards/instructor.card'
 import { Button } from '@/components/ui/button'
-import { instructors } from '@/constants'
+
 import useTranslate from '@/hooks/use-translate'
 import { MoveUpRight } from 'lucide-react'
 import Link from 'next/link'
-
-function Instructor() {
+interface Props {
+	instructor: IUser[]
+}
+function Instructor({ instructor }: Props) {
 	const t = useTranslate()
 
 	return (
@@ -24,15 +27,17 @@ function Instructor() {
 
 				<div className='flex items-center gap-1 self-end'>
 					<Button variant={'secondary'}>
-						<span>{t('viewAll')}</span>
+						<Link href={'/instructors'}>
+							<span>{t('viewAll')}</span>
+						</Link>
 						<MoveUpRight className='ml-2 size-5 font-bold' />
 					</Button>
 				</div>
 			</div>
 
 			<div className='mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
-				{instructors.map(item => (
-					<InstructorCard key={item.name} {...item} />
+				{instructor.map(item => (
+					<InstructorCard key={item._id} instructor={item} />
 				))}
 			</div>
 

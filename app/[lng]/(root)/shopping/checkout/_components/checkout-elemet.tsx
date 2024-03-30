@@ -61,6 +61,9 @@ function CheckoutElemet({ cards }: Props) {
 														className='object-cover'
 													/>
 												</div>
+												<div>
+													
+												</div>
 											
 												
 												<h1>{item.title}</h1>

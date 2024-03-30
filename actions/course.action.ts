@@ -2,7 +2,12 @@
 
 import Course from '@/database/course.model'
 import { connectToDatabase } from '@/lib/mongoose'
-import { GetCoursesParams, GettAllCoursesParams, ICreateCourse } from './types'
+import {
+	GetCoursesParams,
+	GetPaginationParams,
+	GettAllCoursesParams,
+	ICreateCourse,
+} from './types'
 import { ICourse, ILesson } from '@/app.types'
 import { revalidatePath } from 'next/cache'
 import User from '@/database/user.model'
@@ -38,9 +43,11 @@ export const getCourses = async (params: GetCoursesParams) => {
 		const courses = await Course.find({ instructor: _id })
 			.skip(skipAmount)
 			.limit(pageSize)
+			.populate({ path: 'instructor', select: 'fullName picture', model: User })
 
 		const totalCourses = await Course.find({ instructor: _id }).countDocuments()
 		const isNext = totalCourses > skipAmount + courses.length
+
 		const allCourses = await Course.find({ instructor: _id })
 			.select('purchases currentPrice')
 			.populate({
@@ -53,21 +60,23 @@ export const getCourses = async (params: GetCoursesParams) => {
 					select: 'currentPrice',
 				},
 			})
+
 		const totalStudents = allCourses
 			.map(c => c.purchases.length)
 			.reduce((a, b) => a + b, 0)
 
-		const totalEarnings = allCourses
+		const totalEearnings = allCourses
 			.map(c => c.purchases)
 			.flat()
 			.map(p => p.course.currentPrice)
 			.reduce((a, b) => a + b, 0)
 
-		return { courses, isNext, totalCourses, totalEarnings, totalStudents }
-	} catch (err) {
-		throw new Error('Soething went wrong while getting course! getCoure')
+		return { courses, isNext, totalCourses, totalEearnings, totalStudents }
+	} catch (error) {
+		throw new Error('Soething went wrong while getting course!')
 	}
 }
+
 
 export const getCourseById = async (id: string) => {
 	try {
@@ -390,5 +399,55 @@ export const getStudentCourse = async (clerkId: string) => {
 		return { allCourses, expenses }
 	} catch (error) {
 		throw new Error('Something went wrong while getting student courses!')
+	}
+}
+export const getAdminCourse = async (params: GetPaginationParams) => {
+	try {
+		await connectToDatabase()
+		const { page = 1, pageSize = 3 } = params
+		const skipAmount = (page - 1) * pageSize
+		const courses = await Course.find({})
+			.skip(skipAmount)
+			.limit(pageSize)
+			.sort({ createdAt: -1 })
+			.populate('instructor previewImage title')
+			.populate({
+				path: 'instructor',
+				select: 'fullName picture',
+				model: User,
+			})
+		const totalCourses = await Course.countDocuments()
+		const isNext = totalCourses > skipAmount + courses.length
+
+		return { courses, isNext, totalCourses }
+	} catch (error) {
+		throw new Error('Something went wrong while getting admin courses!')
+	}
+}
+export const getAdminReviews = async (params: GetPaginationParams) => {
+	try {
+		await connectToDatabase()
+		const { page = 1, pageSize = 3 } = params
+		const skipAmount = (page - 1) * pageSize
+		const reviews = await Review.find()
+			.sort({ createdAt: -1 })
+			.skip(skipAmount)
+			.limit(pageSize)
+			.populate({
+				path: 'user',
+				select: 'fullName picture',
+				model: User,
+			})
+			.populate({
+				path: 'course',
+				select: 'title',
+				model: Course,
+			})
+		const totalReviews = await Review.countDocuments()
+		const isNext = totalReviews > skipAmount + reviews.length
+
+		return { reviews, isNext, totalReviews }
+	} catch (error) {
+		throw new Error('Something went wrong while getting admin reviews!')
 	}
 }

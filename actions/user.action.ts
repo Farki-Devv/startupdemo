@@ -1,7 +1,7 @@
 'use server'
 
 import { connectToDatabase } from '@/lib/mongoose'
-import { ICreateUser, IUpdateUser } from './types'
+import { GetPaginationParams, ICreateUser, IUpdateUser } from './types'
 import User from '@/database/user.model'
 import { revalidatePath } from 'next/cache'
 import Review from '@/database/review.model'
@@ -51,6 +51,17 @@ export const getUserById = async (clerkId: string) => {
 		throw new Error('Error fetching user. Please try again.')
 	}
 }
+export const getUser = async (clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId }).select(
+			'fullName picture clerkId	 email isAdmin role approvedInstructor  '
+		)
+		return JSON.parse(JSON.stringify(user))
+	} catch (error) {
+		throw new Error('Error fetching user. Please try again.')
+	}
+}
 export const getUserReviews = async (clerkId: string) => {
 	try {
 		await connectToDatabase()
@@ -65,5 +76,42 @@ export const getUserReviews = async (clerkId: string) => {
 		return reviews
 	} catch (error) {
 		throw new Error('Somethign went wrong ')
+	}
+}
+export const getAdminInstructors = async (params: GetPaginationParams) => {
+	try {
+		await connectToDatabase()
+
+		const { page = 1, pageSize = 3 } = params
+		const skipAmount = (page - 1) * pageSize
+		const instructors = await User.find({ role: 'instructor' })
+			.skip(skipAmount)
+			.limit(pageSize)
+			.sort({ createdAt: -1 })
+		const totalInstructors = await User.countDocuments({ role: 'instructor' })
+		const isNext = totalInstructors > skipAmount + instructors.length
+
+		return { instructors, isNext, totalInstructors }
+	} catch (error) {
+		throw new Error('Something went wrong')
+	}
+}
+export const getInstructors = async () => {
+	try {
+		await connectToDatabase()
+		return await User.find({ approvedInstructor: true }).select(
+			'fullName email isAdmin role website youtube github job clerkId'
+		)
+	} catch (error) {
+		throw new Error('Something went wrong')
+	}
+}
+export const getRole = async (clerkId: string) => {
+	try {
+		await connectToDatabase()
+		const user = await User.findOne({ clerkId }).select('role isAdmin')
+		return user
+	} catch (error) {
+		throw new Error('Something went wrong')
 	}
 }
