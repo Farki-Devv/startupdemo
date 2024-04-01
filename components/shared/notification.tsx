@@ -32,7 +32,7 @@ function Notification() {
 			variant={count === 0 ? 'ghost' : 'secondary'}
 			className='relative'
 		>
-			<Link href={'/profile/notification'}></Link>
+			<Link href={'/profile/notifications'}></Link>
 			<Bell />
 
 			<div className='absolute -right-2 -top-2 flex size-6 items-center  justify-center rounded-full bg-destructive'>
