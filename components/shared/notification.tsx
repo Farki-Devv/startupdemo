@@ -8,7 +8,7 @@ import { useAuth } from '@clerk/nextjs'
 import { getCount } from '@/actions/notification.action'
 
 function Notification() {
-	const [count, setCount] = useState(4)
+	const [count, setCount] = useState(0)
 	const { userId } = useAuth()
 
 	useEffect(() => {
