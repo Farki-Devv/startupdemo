@@ -1,3 +1,4 @@
+
 import { getUser } from '@/actions/user.action'
 import { IUser } from '@/app.types'
 import { useAuth } from '@clerk/nextjs'
@@ -19,7 +20,8 @@ const useUser = () => {
 		}
 
 		userId && getData()
-	}, [userId])
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [])
 
 	return { user }
 }

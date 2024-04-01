@@ -15,6 +15,7 @@ import {
 import { usePathname } from 'next/navigation'
 import { updateUser } from '@/actions/user.action'
 import { toast } from 'sonner'
+import { sendNotification } from '@/actions/notification.action'
 interface Props {
 	item: IUser
 }
@@ -24,13 +25,18 @@ function Item({ item }: Props) {
 		const msg = item.role === 'instuctor' ? 'Disapprove' : 'Approve'
 		const isConfirmed = confirm(`Are you sure you want to ${msg} this user ?`)
 		if (isConfirmed) {
-			const promise = updateUser({
+			const upd = updateUser({
 				clerkId: item.clerkId,
 				updatedData: {
 					role: item.role === 'user' ? 'instructor' : 'user',
 				},
 				path: pathname,
 			})
+			const not = sendNotification(
+				item.clerkId,
+				`messageRoleChanged ${item.role === 'user' ? 'instructor' : 'user'}`
+			)
+			const promise = Promise.all([upd, not])
 			toast.promise(promise, {
 				loading: 'Loading...',
 				success: `${msg} Successfully updated!`,

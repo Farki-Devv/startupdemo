@@ -67,7 +67,7 @@ export interface IUser {
 	linkedin: string
 	github: string
 	youtube: string
-	approvedInstructor:boolean
+	approvedInstructor: boolean
 	isAdmin: boolean
 }
 
@@ -125,4 +125,12 @@ export interface INavlinks {
 	label: string
 	route: string
 	icon: LucideIcon
+}
+
+export interface INotification {
+	_id: string
+	user: IUser
+	message: string
+	isRead: boolean
+	createdAt: string
 }
